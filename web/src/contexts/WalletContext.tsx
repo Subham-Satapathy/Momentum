@@ -50,7 +50,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for account changes
     if (typeof window !== 'undefined' && window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
+      window.ethereum.on('accountsChanged', (...args) => {
+        const accounts = args[0] as string[];
         if (accounts.length > 0) {
           setState(prev => ({
             ...prev,
@@ -62,7 +63,8 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
         }
       });
 
-      window.ethereum.on('chainChanged', (chainId: string) => {
+      window.ethereum.on('chainChanged', (...args) => {
+        const chainId = args[0] as string;
         setState(prev => ({
           ...prev,
           chainId: parseInt(chainId, 16),
