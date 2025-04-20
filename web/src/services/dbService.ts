@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection, Document, UpdateFilter, WithId, Filter, OptionalUnlessRequiredId, InferIdType } from 'mongodb';
+import { MongoClient, Db, Collection, Document, UpdateFilter, WithId, Filter, OptionalUnlessRequiredId } from 'mongodb';
 import 'dotenv/config';
 
 // Get MongoDB URI from environment variables
