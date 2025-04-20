@@ -170,7 +170,8 @@ export const getTaskCount = async (
       // Try to call the contract to get the task count directly
       const count = await contract.getUserTaskCount(address);
       return Number(count);
-    } catch (methodError) {
+    } catch (error) {
+      console.log(error);
       console.warn('getUserTaskCount method not available in contract, falling back to getUserTasks');
       
       // Fallback to getting all tasks and counting them

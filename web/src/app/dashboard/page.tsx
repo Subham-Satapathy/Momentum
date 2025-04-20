@@ -19,6 +19,7 @@ export default function Dashboard() {
   const { isConnected, address } = useWallet();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verifiedTaskCount, setVerifiedTaskCount] = useState(0);
   // View toggle state
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');

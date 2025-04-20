@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import LogoIcon from './LogoIcon';
 import TaskModal from './TaskModal';
-import { Todo } from '../types/todo';
 
 export default function Navbar() {
   const { isConnected, address, disconnect } = useWallet();
