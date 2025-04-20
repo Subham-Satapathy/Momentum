@@ -1,0 +1,181 @@
+[
+    {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "taskHash",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            }
+        ],
+        "name": "TaskAdded",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "taskHash",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "verified",
+                "type": "bool"
+            }
+        ],
+        "name": "TaskVerified",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "_taskHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "addTask",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "_taskHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "getTask",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_user",
+                "type": "address"
+            }
+        ],
+        "name": "getUserTasks",
+        "outputs": [
+            {
+                "internalType": "bytes32[]",
+                "name": "",
+                "type": "bytes32[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "tasks",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "completed",
+                "type": "bool"
+            },
+            {
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "userTasks",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "_taskHash",
+                "type": "bytes32"
+            }
+        ],
+        "name": "verifyTask",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]
