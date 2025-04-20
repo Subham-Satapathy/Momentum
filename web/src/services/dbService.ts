@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection, Document, UpdateFilter, WithId } from 'mongodb';
+import { MongoClient, Db, Collection, Document, UpdateFilter, WithId, Filter, OptionalUnlessRequiredId, InferIdType } from 'mongodb';
 import 'dotenv/config';
 
 // Get MongoDB URI from environment variables
@@ -64,7 +64,7 @@ export class DbService<T extends Document> {
   /**
    * Find a single document
    */
-  async findOne(query = {}): Promise<(WithId<T> & { 
+  async findOne(query: Filter<T> = {}): Promise<(WithId<T> & { 
     save: () => Promise<WithId<T>>, 
     toObject: () => WithId<T> 
   }) | null> {
@@ -72,15 +72,23 @@ export class DbService<T extends Document> {
     const doc = await collection.findOne(query);
     
     if (doc) {
-      return {
+      const enrichedDoc = {
         ...doc,
         save: async () => {
           const { _id, ...rest } = doc as WithId<T>;
-          await collection.updateOne({ _id }, { $set: rest });
+          await collection.updateOne(
+            { _id } as unknown as Filter<T>, 
+            { $set: rest as unknown as Partial<T> }
+          );
           return doc;
         },
         toObject: () => doc
       };
+      
+      return enrichedDoc as (WithId<T> & { 
+        save: () => Promise<WithId<T>>, 
+        toObject: () => WithId<T> 
+      });
     }
     
     return null;
@@ -91,7 +99,7 @@ export class DbService<T extends Document> {
    */
   async create(document: T): Promise<T> {
     const collection = await this.getCollection();
-    const result = await collection.insertOne(document);
+    const result = await collection.insertOne(document as OptionalUnlessRequiredId<T>);
     return { ...document, _id: result.insertedId } as T;
   }
 
