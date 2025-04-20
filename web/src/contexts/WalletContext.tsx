@@ -33,10 +33,11 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
             const chainId = Number(network.chainId);
             
             setState({
-              ...state,
               isConnected: true,
               address,
               chainId,
+              isConnecting: false,
+              error: null,
             });
           }
         }
@@ -149,6 +150,10 @@ export const useWallet = (): WalletContextType => {
 // Add TypeScript declaration to make window.ethereum available
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: {
+      request: (args: {method: string, params?: unknown[]}) => Promise<unknown>;
+      on: (event: string, listener: (...args: unknown[]) => void) => void;
+      removeAllListeners: () => void;
+    };
   }
 } 

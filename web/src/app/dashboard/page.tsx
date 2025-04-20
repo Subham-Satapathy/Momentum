@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import TodoList from '../../components/TodoList';
 import KanbanBoard from '../../components/KanbanBoard';
-import TodoStats from '../../components/TodoStats';
 import TaskModal from '../../components/TaskModal';
-import { Todo, Priority, TaskStatus } from '../../types/todo';
+import { Todo, TaskStatus } from '../../types/todo';
 import { useWallet } from '../../contexts/WalletContext';
 import { getTasks, loginUser, deleteTask, updateTask } from '../../services/api';
 import { setToken } from '../../services/auth';
@@ -26,6 +24,20 @@ export default function Dashboard() {
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   // Modal state
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
+  const fetchVerifiedTaskCount = useCallback(async () => {
+    if (!address) return;
+    
+    try {
+      if (typeof window !== 'undefined' && window.ethereum) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const count = await getTaskCount(address, provider);
+        setVerifiedTaskCount(count);
+      }
+    } catch (error) {
+      console.error('Error fetching verified task count:', error);
+    }
+  }, [address]);
 
   useEffect(() => {
     // Check if user is connected to wallet
@@ -54,7 +66,7 @@ export default function Dashboard() {
     } else {
       setIsLoading(false);
     }
-  }, [isConnected, address]);
+  }, [isConnected, address, fetchVerifiedTaskCount]);
 
   useEffect(() => {
     // Redirect to home if not connected
@@ -72,20 +84,6 @@ export default function Dashboard() {
       toast.error('Failed to load tasks. Please try again later.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const fetchVerifiedTaskCount = async () => {
-    if (!address) return;
-    
-    try {
-      if (typeof window !== 'undefined' && window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const count = await getTaskCount(address, provider);
-        setVerifiedTaskCount(count);
-      }
-    } catch (error) {
-      console.error('Error fetching verified task count:', error);
     }
   };
 

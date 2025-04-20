@@ -1,4 +1,4 @@
-import { MongoClient, Db, Collection, Document, ObjectId, UpdateFilter, WithId } from 'mongodb';
+import { MongoClient, Db, Collection, Document, UpdateFilter, WithId } from 'mongodb';
 import 'dotenv/config';
 
 // Get MongoDB URI from environment variables
@@ -58,13 +58,16 @@ export class DbService<T extends Document> {
       ...doc,
       toObject: () => doc,
       lean: () => docs
-    })) as any;
+    }));
   }
 
   /**
    * Find a single document
    */
-  async findOne(query = {}): Promise<(WithId<T> & { save: () => Promise<any>, toObject: () => WithId<T> }) | null> {
+  async findOne(query = {}): Promise<(WithId<T> & { 
+    save: () => Promise<WithId<T>>, 
+    toObject: () => WithId<T> 
+  }) | null> {
     const collection = await this.getCollection();
     const doc = await collection.findOne(query);
     
@@ -72,12 +75,12 @@ export class DbService<T extends Document> {
       return {
         ...doc,
         save: async () => {
-          const { _id, save, toObject, ...rest } = doc as any;
+          const { _id, ...rest } = doc as WithId<T>;
           await collection.updateOne({ _id }, { $set: rest });
           return doc;
         },
         toObject: () => doc
-      } as any;
+      };
     }
     
     return null;
@@ -86,17 +89,19 @@ export class DbService<T extends Document> {
   /**
    * Create a document
    */
-  async create(document: T): Promise<any> {
+  async create(document: T): Promise<T> {
     const collection = await this.getCollection();
-    return collection.insertOne(document as any);
+    const result = await collection.insertOne(document);
+    return { ...document, _id: result.insertedId } as T;
   }
 
   /**
    * Update a document
    */
-  async updateOne(query = {}, update = {}): Promise<any> {
+  async updateOne(query = {}, update = {}): Promise<{ modifiedCount: number }> {
     const collection = await this.getCollection();
-    return collection.updateOne(query, update as UpdateFilter<T>);
+    const result = await collection.updateOne(query, update as UpdateFilter<T>);
+    return { modifiedCount: result.modifiedCount };
   }
 
   /**

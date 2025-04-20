@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useWallet } from '../contexts/WalletContext';
 import WalletConnect from './WalletConnect';
 import LogoIcon from './LogoIcon';
@@ -45,12 +45,6 @@ const featureCardVariants = {
 export default function LandingHero() {
   const router = useRouter();
   const { isConnected } = useWallet();
-  const [isMounted, setIsMounted] = useState(false);
-
-  // Set isMounted to true after component mounts
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Redirect to dashboard if connected
   useEffect(() => {

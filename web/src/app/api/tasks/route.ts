@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { TaskStatus, Todo, Priority } from '../../../types/todo';
-import { connectToDatabase, Task } from '../../../configs/mongodb';
+import { TaskStatus, Todo } from '../../../types/todo';
 import { verifyToken } from '../../../services/auth';
 import { DbService } from '../../../services/dbService';
 import { computeTaskHash } from '../../../services/blockchain';

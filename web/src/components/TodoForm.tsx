@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Priority, TaskType, Todo } from '../types/todo';
+import { TaskType, Todo } from '../types/todo';
 import { createTask } from '../services/api';
-import { useWallet } from '../contexts/WalletContext';
 import { analyzePriority } from '../services/ai';
 
 interface TodoFormProps {
@@ -17,14 +16,10 @@ export default function TodoForm({ onAddTodo }: TodoFormProps) {
   const [taskType, setTaskType] = useState<TaskType>('personal');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setIsAiAnalyzing(true);
     
     if (!content.trim()) {
       setError('Task title is required');
@@ -44,10 +39,6 @@ export default function TodoForm({ onAddTodo }: TodoFormProps) {
         taskType,
       });
       
-      // Set success message
-      setMessage(`Task created with ${priorityResult.priority} priority. ${priorityResult.reasoning}`);
-      setMessageType('success');
-      
       // Reset form fields
       setContent('');
       setDescription('');
@@ -58,11 +49,9 @@ export default function TodoForm({ onAddTodo }: TodoFormProps) {
       onAddTodo(newTask);
     } catch (error) {
       console.error('Error adding task:', error);
-      setMessage('Failed to add task. Please try again.');
-      setMessageType('error');
+      setError('Failed to add task. Please try again.');
     } finally {
       setIsSubmitting(false);
-      setIsAiAnalyzing(false);
     }
   };
 

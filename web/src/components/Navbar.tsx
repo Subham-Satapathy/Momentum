@@ -40,7 +40,7 @@ export default function Navbar() {
   }
 
   // Handle adding a new task
-  const handleAddTodo = (todo: Todo) => {
+  const handleAddTodo = () => {
     // We need to implement a global state management or context to handle this
     // For now, we'll just close the modal
     setIsTaskModalOpen(false);

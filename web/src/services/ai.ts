@@ -1,4 +1,4 @@
-import { Priority, Todo } from '../types/todo';
+import { Priority } from '../types/todo';
 
 // AI task analysis function
 export const analyzeTaskWithAI = (task: {

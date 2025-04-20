@@ -70,7 +70,7 @@ export default function LogoPage() {
         <div className="mt-12 p-6 bg-dark-800 rounded-xl border border-dark-600">
           <h2 className="text-2xl font-semibold mb-4">Logo Usage Guidelines</h2>
           <div className="space-y-3 text-gray-300">
-            <p>• Maintain clear space around the logo equal to the height of the "M" in the logo</p>
+            <p>• Maintain clear space around the logo equal to the height of the &quot;M&quot; in the logo</p>
             <p>• Do not alter the colors or distort the proportions of the logo</p>
             <p>• The minimum recommended size is 32px in height for digital use</p>
             <p>• When using on colored backgrounds, use the white or monochrome version</p>

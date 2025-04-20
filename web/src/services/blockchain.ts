@@ -12,7 +12,12 @@ export interface TaskStatus {
 // Get contract address from environment variables
 const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '0xcD177D4704A85879D5E8Fc78a6981246Ce10f830';
 
-export const computeTaskHash = (task: any): string => {
+export const computeTaskHash = (task: { 
+  content: string;
+  description?: string;
+  createdAt?: string;
+  userAddress?: string;
+}): string => {
   // Ensure we have all necessary data
   if (!task || !task.content) {
     throw new Error('Task data is incomplete');
@@ -95,7 +100,7 @@ export const verifyTaskOnBlockchain = async (
     
     // Return the hash
     return { txHash: receipt.hash };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Blockchain error:', error);
     throw error;
   }
@@ -142,8 +147,8 @@ export const getUserTasks = async (
     try {
       const tasks = await contract.getUserTasks(userAddress);
       return tasks;
-    } catch (methodError) {
-      console.warn('getUserTasks method not available in contract:', methodError);
+    } catch (error) {
+      console.warn('getUserTasks method not available in contract:', error);
       return [];
     }
   } catch (error) {

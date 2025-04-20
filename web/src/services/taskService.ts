@@ -1,5 +1,4 @@
 import { DbService } from './dbService';
-import { ObjectId } from 'mongodb';
 import { Todo, TaskStatus } from '../types/todo';
 
 // Create a task service using the generic DB service
