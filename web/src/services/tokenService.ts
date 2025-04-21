@@ -5,7 +5,7 @@ import { updateUserTokenBalance } from './api';
 
 dotenv.config();
 const rpcUrl = process.env.NEXT_PUBLIC_SEPOLIA_RPC_URL;
-const privateKey = process.env.REWARDER_PRIVATE_KEY;
+const privateKey = process.env.NEXT_PUBLIC_REWARDER_PRIVATE_KEY;
 
 const tokenContractAddress = process.env.NEXT_PUBLIC_MOM_TOKEN_ADDRESS;
 
