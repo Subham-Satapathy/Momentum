@@ -2,7 +2,7 @@
 
 A decentralized task management platform that rewards users with MOM tokens for completing tasks. Combining blockchain technology with a modern web interface, Momentum helps users build productive habits through tokenized incentives.
 
-## 🚀 Overview
+## Overview
 
 Momentum is a productivity application that leverages blockchain technology to:
 
@@ -45,7 +45,7 @@ The project consists of two main components:
 - Framer Motion for animations
 - MongoDB for data persistence
 
-## 🏗️ Setup Instructions
+## Setup Instructions
 
 ### Prerequisites
 - Node.js (v18+)
@@ -92,9 +92,14 @@ The project consists of two main components:
 
 3. Create a `.env.local` file with:
    ```
-   NEXT_PUBLIC_CONTRACT_ADDRESS=deployed_task_manager_address
-   NEXT_PUBLIC_TOKEN_ADDRESS=deployed_token_address
-   MONGODB_URI=your_mongodb_connection_string
+   MONGODB_URI=mongodb+srv://<USERNAME>:<PASSWORD>@<CLUSTER>.mongodb.net/?retryWrites=true&w=majority&appName=<APP_NAME>
+   NEXT_PUBLIC_CONTRACT_ADDRESS=0x<YOUR_CONTRACT_ADDRESS>
+   GOOGLE_API_KEY=<YOUR_GOOGLE_API_KEY>
+   NEXT_PUBLIC_MOM_TOKEN_ADDRESS=0x<YOUR_TOKEN_ADDRESS>
+   NEXT_PUBLIC_REWARDER_PRIVATE_KEY=<YOUR_REWARDER_PRIVATE_KEY>
+   NEXT_PUBLIC_SEPOLIA_RPC_URL=https://sepolia.infura.io/v3/<YOUR_INFURA_PROJECT_ID>
+   NEXT_PUBLIC_JWT_SECRET=<YOUR_JWT_SECRET>
+
    ```
 
 4. Start the development server:
@@ -102,9 +107,9 @@ The project consists of two main components:
    npm run dev
    ```
 
-5. Open [https://momentum.subhs.xyz] to see the application
+5. You can interact with my live app here : [https://momentum.subhs.xyz]
 
-## 💡 Features
+## Features
 
 - **Task Management**: Create, track, and complete tasks with blockchain verification
 - **Token Rewards**: Earn MOM tokens for completing tasks
@@ -112,7 +117,7 @@ The project consists of two main components:
 - **Dashboard**: View your task history and token balance
 - **Responsive Design**: Works on desktop and mobile devices
 
-## 🔐 Smart Contract Security
+## Smart Contract Security
 
 The smart contracts implement several security best practices:
 - Access control using OpenZeppelin's Ownable
@@ -120,7 +125,7 @@ The smart contracts implement several security best practices:
 - Nonce tracking to prevent replay attacks
 - Maximum reward limits for authorized distributors
 
-## 🧪 Testing
+## Testing
 
 ### Blockchain Tests
 ```
@@ -134,7 +139,7 @@ cd web
 npm run test
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Smart Contracts
 The project includes scripts for deploying to test networks and mainnet. See the deployment scripts in the `blockchain/scripts` directory.
@@ -147,10 +152,10 @@ cd web
 npm run build
 ```
 
-## 📜 License
+## License
 
 This project is licensed under the MIT License.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
