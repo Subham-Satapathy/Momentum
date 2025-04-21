@@ -102,7 +102,7 @@ The project consists of two main components:
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) to see the application
+5. Open [https://momentum.subhs.xyz] to see the application
 
 ## 💡 Features
 
