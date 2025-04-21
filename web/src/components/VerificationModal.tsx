@@ -174,7 +174,7 @@ export default function VerificationModal({ isOpen, todo, onClose, onVerified }:
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Task Verified!</h3>
                 <p className="text-gray-300 text-center mb-2">
-                  You earned <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-bold">{tokenReward} MOM</span> tokens as reward
+                  You earned <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 font-bold">{tokenReward} $MOM</span> tokens as reward
                 </p>
                 <p className="text-gray-400 text-xs text-center mb-6">Rewards have been added to your balance</p>
                 

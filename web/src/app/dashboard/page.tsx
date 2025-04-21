@@ -380,7 +380,7 @@ export default function Dashboard() {
             
             <div className="py-2">
               <p className="text-gray-300 mb-4">
-                Earn MOM tokens by completing tasks and verifying them on the blockchain. Different tasks earn different amounts based on priority and type.
+                Earn $MOM tokens by completing tasks and verifying them on the blockchain. Different tasks earn different amounts based on priority and type.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

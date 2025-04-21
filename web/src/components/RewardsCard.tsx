@@ -109,7 +109,7 @@ export default function RewardsCard({ address }: RewardsCardProps) {
           <div className="text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
             {Number(balance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
           </div>
-          <p className="text-gray-300">MOM Tokens</p>
+          <p className="text-gray-300">$MOM Tokens</p>
           
           <div className="mt-6 py-3 px-4 bg-white/5 rounded-xl border border-white/10">
             <h4 className="font-medium text-white mb-1">How to earn more?</h4>
