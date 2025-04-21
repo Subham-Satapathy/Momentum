@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import { updateUserTokenBalance } from './api';
 
 dotenv.config();
+const rpcUrl = process.env.SEPOLIA_RPC_URL;
+const privateKey = process.env.REWARDER_PRIVATE_KEY;
 
 const tokenContractAddress = process.env.NEXT_PUBLIC_MOM_TOKEN_ADDRESS;
 
@@ -143,13 +145,12 @@ export const rewardUserServerSide = async (
     const priorityKey = priority as keyof RewardAmount;
     const rewardAmount = REWARD_AMOUNTS[taskTypeKey]?.[priorityKey] || 5;
     
-    const rpcUrl = process.env.SEPOLIA_RPC_URL || 'https://sepolia.infura.io/v3/752210d34ce54b7daad6fb8776cf566b';
+    
     if (!rpcUrl) {
       throw new Error('SEPOLIA_RPC_URL is not defined in environment variables');
     }
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     
-    const privateKey = process.env.REWARDER_PRIVATE_KEY || 'a333fd7171aadf987ed73afb872ea885409a589db65049e5573768ae405d861d';
     if (!privateKey) {
       throw new Error('REWARDER_PRIVATE_KEY is not defined in environment variables');
     }
