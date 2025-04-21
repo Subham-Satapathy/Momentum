@@ -35,10 +35,8 @@ export const setToken = (token: string): void => {
 export const getToken = (): string | null => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('auth_token');
-    console.log('[Auth] Getting token from localStorage:', token ? 'Token exists' : 'No token found');
     return token;
   }
-  console.log('[Auth] Window is undefined, cannot get token');
   return null;
 };
 

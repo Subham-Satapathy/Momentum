@@ -1,33 +1,69 @@
 import { Todo, TaskType, Priority, TaskStatus } from '../types/todo';
 import { getToken } from './auth';
+import { graphqlRequest, Queries, Mutations } from './graphqlClient';
+import { transformTaskFromGraphQL, transformTaskToGraphQL } from '../graphql/mappers';
 
-const API_BASE_URL = '/api';
+interface LoginResponse {
+  login: {
+    token: string;
+    user: {
+      address: string;
+      tokenBalance: number;
+    }
+  }
+}
 
-const getAuthHeaders = () => {
-  const token = getToken();
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
-  };
-};
+interface CreateTaskResponse {
+  createTask: Record<string, any>;
+}
+
+interface GetTasksResponse {
+  getTasks: Array<Record<string, any>>;
+}
+
+interface UpdateTaskResponse {
+  updateTask: Record<string, any>;
+}
+
+interface DeleteTaskResponse {
+  deleteTask: boolean;
+}
+
+interface CompleteTaskResponse {
+  completeTask: Record<string, any>;
+}
+
+interface GetUserBalanceResponse {
+  getUserBalance: number;
+}
+
+interface UpdateUserTokenBalanceResponse {
+  updateUserTokenBalance: {
+    address: string;
+    tokenBalance: number;
+  }
+}
 
 export const loginUser = async (walletAddress: string): Promise<string> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ walletAddress }),
+    const response = await graphqlRequest<LoginResponse>({
+      query: Mutations.LOGIN,
+      variables: { walletAddress },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Login failed');
+    if (response.errors && response.errors.length > 0) {
+      throw new Error(response.errors[0].message || 'Login failed');
     }
 
-    const data = await response.json();
-    return data.token;
+    if (response.data?.login?.user?.tokenBalance) {
+      const userTokenBalance = response.data.login.user.tokenBalance;
+      
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('refresh-token-balance'));
+      }, 100);
+    }
+
+    return response.data?.login.token || '';
   } catch (error) {
     console.error('Error during login:', error);
     throw error;
@@ -43,19 +79,20 @@ export const createTask = async (taskData: {
   taskHash?: string;
 }): Promise<Todo> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(taskData),
+    const token = getToken() || '';
+    const graphQLInput = transformTaskToGraphQL(taskData);
+    
+    const response = await graphqlRequest<CreateTaskResponse>({
+      query: Mutations.CREATE_TASK,
+      variables: { input: graphQLInput },
+      authToken: token,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to create task');
+    if (response.errors && response.errors.length > 0) {
+      throw new Error(response.errors[0].message || 'Failed to create task');
     }
 
-    const data = await response.json();
-    return data.task;
+    return transformTaskFromGraphQL(response.data?.createTask);
   } catch (error) {
     console.error('Error creating task:', error);
     throw error;
@@ -64,18 +101,18 @@ export const createTask = async (taskData: {
 
 export const getTasks = async (): Promise<Todo[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
+    const token = getToken() || '';
+    const response = await graphqlRequest<GetTasksResponse>({
+      query: Queries.GET_TASKS,
+      authToken: token,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to fetch tasks');
+    if (response.errors && response.errors.length > 0) {
+      throw new Error(response.errors[0].message || 'Failed to fetch tasks');
     }
 
-    const data = await response.json();
-    return data.tasks;
+    const tasks = response.data?.getTasks || [];
+    return tasks.map(transformTaskFromGraphQL);
   } catch (error) {
     console.error('Error fetching tasks:', error);
     throw error;
@@ -84,7 +121,6 @@ export const getTasks = async (): Promise<Todo[]> => {
 
 export const updateTask = async (taskId: string, updates: Partial<Todo>): Promise<Todo> => {
   try {
-
     const cleanedUpdates = { ...updates };
     Object.keys(cleanedUpdates).forEach((key: string) => {
       const k = key as keyof Partial<Todo>;
@@ -93,39 +129,41 @@ export const updateTask = async (taskId: string, updates: Partial<Todo>): Promis
       }
     });
     
-    const requestBody = { id: taskId, ...cleanedUpdates };
+    const rawInput = { id: taskId, ...cleanedUpdates };
+    const input = transformTaskToGraphQL(rawInput);
+    const token = getToken() || '';
     
-    const response = await fetch(`${API_BASE_URL}/tasks`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(requestBody),
-      cache: 'no-store'
+    const response = await graphqlRequest<UpdateTaskResponse>({
+      query: Mutations.UPDATE_TASK,
+      variables: { input },
+      authToken: token,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to update task');
+    if (response.errors && response.errors.length > 0) {
+      throw new Error(response.errors[0].message || 'Failed to update task');
     }
 
-    const data = await response.json();
-    return data.task;
+    return transformTaskFromGraphQL(response.data?.updateTask);
   } catch (error) {
     console.error('Error updating task:', error);
     throw error;
   }
 };
 
-export const deleteTask = async (taskId: string): Promise<void> => {
+export const deleteTask = async (taskId: string): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tasks?id=${taskId}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(),
+    const token = getToken() || '';
+    const response = await graphqlRequest<DeleteTaskResponse>({
+      query: Mutations.DELETE_TASK,
+      variables: { id: taskId },
+      authToken: token,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to delete task');
+    if (response.errors && response.errors.length > 0) {
+      throw new Error(response.errors[0].message || 'Failed to delete task');
     }
+
+    return response.data?.deleteTask || false;
   } catch (error) {
     console.error('Error deleting task:', error);
     throw error;
@@ -133,10 +171,68 @@ export const deleteTask = async (taskId: string): Promise<void> => {
 };
 
 export const updateTaskStatus = async (taskId: string, status: TaskStatus): Promise<Todo> => {
-  const updates = { 
-    status,
-    completed: status === 'completed',
-    completedAt: status === 'completed' ? new Date().toISOString() : undefined
-  };
-  return updateTask(taskId, updates);
+  try {
+    if (status === 'completed') {
+      const token = getToken() || '';
+      const response = await graphqlRequest<CompleteTaskResponse>({
+        query: Mutations.COMPLETE_TASK,
+        variables: { id: taskId },
+        authToken: token,
+      });
+
+      if (response.errors && response.errors.length > 0) {
+        throw new Error(response.errors[0].message || 'Failed to complete task');
+      }
+
+      return transformTaskFromGraphQL(response.data?.completeTask);
+    } else {
+      const updates = { 
+        status,
+        completed: false,
+      };
+      return updateTask(taskId, updates);
+    }
+  } catch (error) {
+    console.error('Error updating task status:', error);
+    throw error;
+  }
+};
+
+export const getUserTokenBalance = async (): Promise<number> => {
+  try {
+    const token = getToken() || '';
+    const response = await graphqlRequest<GetUserBalanceResponse>({
+      query: Queries.GET_USER_BALANCE,
+      authToken: token,
+    });
+
+    if (response.errors && response.errors.length > 0) {
+      throw new Error(response.errors[0].message || 'Failed to fetch token balance');
+    }
+
+    return response.data?.getUserBalance || 0;
+  } catch (error) {
+    console.error('Error fetching user token balance:', error);
+    throw error;
+  }
+};
+
+export const updateUserTokenBalance = async (amount: number): Promise<void> => {
+  try {
+    const token = getToken() || '';
+    const response = await graphqlRequest<UpdateUserTokenBalanceResponse>({
+      query: Mutations.UPDATE_USER_TOKEN_BALANCE,
+      variables: { amount },
+      authToken: token,
+    });
+
+    if (response.errors && response.errors.length > 0) {
+      throw new Error(response.errors[0].message || 'Failed to update token balance');
+    }
+
+    return;
+  } catch (error) {
+    console.error('Error updating user token balance:', error);
+    throw error;
+  }
 };

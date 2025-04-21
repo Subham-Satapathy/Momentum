@@ -34,11 +34,9 @@ export default function Navbar() {
   }, [scrolled]);
 
   useEffect(() => {
-    // Close mobile menu when navigating
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Close mobile menu when screen is resized to desktop size
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -56,7 +54,7 @@ export default function Navbar() {
 
   const handleAddTodo = () => {
     setIsTaskModalOpen(false);
-    window.location.reload(); // Temporary solution to refresh the page to show new task
+    window.location.reload();
   };
 
   return (
@@ -80,7 +78,6 @@ export default function Navbar() {
               </span>
             </Link>
             
-            {/* Mobile menu button */}
             <button 
               className="md:hidden z-20 p-2 rounded-md text-gray-200 hover:text-white"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -97,7 +94,6 @@ export default function Navbar() {
               )}
             </button>
             
-            {/* Desktop navigation */}
             <nav className="hidden md:flex items-center space-x-4">
               <Link 
                 href="/dashboard" 
@@ -152,7 +148,6 @@ export default function Navbar() {
           </div>
         </div>
         
-        {/* Mobile menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div 

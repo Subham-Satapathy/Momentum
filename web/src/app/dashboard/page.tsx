@@ -11,14 +11,14 @@ import { getTasks, loginUser, deleteTask, updateTask } from '../../services/api'
 import { setToken } from '../../services/auth';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import RewardsCard from '../../components/RewardsCard';
 
 export default function Dashboard() {
   const router = useRouter();
   const { isConnected, address } = useWallet();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [verifiedTaskCount, setVerifiedTaskCount] = useState(0);
+  const [, setVerifiedTaskCount] = useState(0);
   const [isDesktop, setIsDesktop] = useState(true);
 
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
@@ -51,16 +51,12 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-
     setIsLoading(true);
 
     if (isConnected && address) {
-
       loginUser(address)
         .then(token => {
-
           setToken(token);
-
           return fetchTasks();
         })
         .then(() => {
@@ -77,7 +73,6 @@ export default function Dashboard() {
   }, [isConnected, address, fetchVerifiedTaskCount]);
 
   useEffect(() => {
-
     if (!isLoading && !isConnected) {
       router.push('/');
     }
@@ -102,7 +97,6 @@ export default function Dashboard() {
 
   const toggleTodo = async (id: string) => {
     try {
-
       const todo = todos.find(todo => todo.id === id);
       if (!todo) return;
 
@@ -120,7 +114,6 @@ export default function Dashboard() {
 
       await updateTask(id, { 
         completed: !todo.completed,
-        completedAt: !todo.completed ? new Date().toISOString() : undefined,
         status: !todo.completed ? 'completed' : 'in-progress'
       });
 
@@ -176,8 +169,7 @@ export default function Dashboard() {
 
       const updatedTask = await updateTask(id, { 
         status,
-        completed: status === 'completed' ? true : false,
-        completedAt: status === 'completed' ? new Date().toISOString() : undefined
+        completed: status === 'completed' ? true : false
       });
 
       toast.success(`Task moved to ${status}`);
@@ -195,13 +187,25 @@ export default function Dashboard() {
     setTodos(
       todos.map((todo) =>
         todo.id === updatedTask.id ? {
-          ...updatedTask,
-          verified: updatedTask.completed ? true : false
+          ...todo,
+          verified: true,
+          txHash: updatedTask.txHash,
+          userAddress: updatedTask.userAddress || todo.userAddress
         } : todo
       )
     );
-    fetchTasks();
     fetchVerifiedTaskCount();
+    
+    // Force refresh of token balance after verification
+    if (address) {
+      // Add a small delay to allow blockchain transaction to settle
+      setTimeout(() => {
+        // This will force the RewardsCard to refetch its data
+        // Dispatching a custom event that RewardsCard will listen for
+        window.dispatchEvent(new CustomEvent('refresh-token-balance'));
+      }, 2000);
+    }
+    
     toast.success('Task verified on blockchain successfully!', {
       icon: '🎉',
       duration: 5000
@@ -295,7 +299,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen py-10 px-6 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 overflow-hidden relative">
-      {}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
         <div className="absolute top-20 left-10 w-64 h-64 bg-pink-500 rounded-full filter blur-[120px] opacity-20"></div>
         <div className="absolute bottom-40 right-10 w-72 h-72 bg-blue-500 rounded-full filter blur-[120px] opacity-20"></div>
@@ -303,10 +306,8 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto">
-
-        {}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
@@ -356,14 +357,135 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
+
+          <RewardsCard address={address} />
         </motion.div>
 
-        {}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 shadow-xl">
+            <div className="flex items-center gap-3 mb-4 border-b border-white/10 pb-4">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white">Rewards Program</h3>
+            </div>
+            
+            <div className="py-2">
+              <p className="text-gray-300 mb-4">
+                Earn MOM tokens by completing tasks and verifying them on the blockchain. Different tasks earn different amounts based on priority and type.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <h4 className="text-purple-400 font-medium mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                    Personal Tasks
+                  </h4>
+                  <div className="text-gray-400 text-sm">
+                    <div className="flex justify-between mb-1">
+                      <span>Low Priority:</span>
+                      <span className="text-white">5 MOM</span>
+                    </div>
+                    <div className="flex justify-between mb-1">
+                      <span>Medium Priority:</span>
+                      <span className="text-white">10 MOM</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>High Priority:</span>
+                      <span className="text-white">15 MOM</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <h4 className="text-blue-400 font-medium mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                      <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                    </svg>
+                    Work Tasks
+                  </h4>
+                  <div className="text-gray-400 text-sm">
+                    <div className="flex justify-between mb-1">
+                      <span>Low Priority:</span>
+                      <span className="text-white">10 MOM</span>
+                    </div>
+                    <div className="flex justify-between mb-1">
+                      <span>Medium Priority:</span>
+                      <span className="text-white">20 MOM</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>High Priority:</span>
+                      <span className="text-white">30 MOM</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <h4 className="text-green-400 font-medium mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+                    </svg>
+                    Study Tasks
+                  </h4>
+                  <div className="text-gray-400 text-sm">
+                    <div className="flex justify-between mb-1">
+                      <span>Low Priority:</span>
+                      <span className="text-white">8 MOM</span>
+                    </div>
+                    <div className="flex justify-between mb-1">
+                      <span>Medium Priority:</span>
+                      <span className="text-white">15 MOM</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>High Priority:</span>
+                      <span className="text-white">25 MOM</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <h4 className="text-pink-400 font-medium mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                    </svg>
+                    Other Tasks
+                  </h4>
+                  <div className="text-gray-400 text-sm">
+                    <div className="flex justify-between mb-1">
+                      <span>Low Priority:</span>
+                      <span className="text-white">5 MOM</span>
+                    </div>
+                    <div className="flex justify-between mb-1">
+                      <span>Medium Priority:</span>
+                      <span className="text-white">10 MOM</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>High Priority:</span>
+                      <span className="text-white">15 MOM</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         <motion.div 
           className="mb-8 flex justify-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
           <div className="inline-flex p-1 backdrop-blur-lg bg-white/5 border border-white/10 rounded-xl">
             <button
@@ -389,12 +511,11 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {}
         <motion.div 
           className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 shadow-xl mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
         >
           {viewMode === 'list' ? (
             <>

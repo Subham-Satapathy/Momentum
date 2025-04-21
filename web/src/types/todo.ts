@@ -18,4 +18,5 @@ export interface Todo {
   txHash?: string;
   taskHash?: string;
   userAddress?: string;
+  rewardTxHash?: string;
 } 

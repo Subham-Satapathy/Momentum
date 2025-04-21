@@ -71,19 +71,33 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
     const date = new Date(dateString);
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
-
-    const isPast = date < now;
     
-    const formattedDate = date.toLocaleDateString();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    const isTomorrow = tomorrow.toDateString() === date.toDateString();
+    
+    const isPast = date < new Date();
+    
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[date.getMonth()];
+    const day = date.getDate();
     const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
-    let displayClass = "text-gray-400";
-    let displayText = `${isToday ? 'Today' : formattedDate} at ${formattedTime}`;
-
+    let displayClass = "text-gray-300";
+    let displayText = "";
+    
+    if (isToday) {
+      displayText = `Today, ${formattedTime}`;
+    } else if (isTomorrow) {
+      displayText = `Tomorrow, ${formattedTime}`;
+    } else {
+      displayText = `${month} ${day}, ${formattedTime}`;
+    }
+    
     if (isPast) {
-      displayClass = todo.completed ? "text-amber-400" : "text-red-400";
+      displayClass = todo.completed ? "text-amber-300" : "text-red-300";
       displayText = todo.completed 
-        ? `Was due: ${displayText}`
+        ? `Due: ${displayText}`
         : `Overdue: ${displayText}`;
     }
     
@@ -301,6 +315,9 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
                     className={`text-sm sm:text-base font-medium ${todo.completed ? 'text-gray-400' : 'text-white'}`}
                   >
                     {todo.content}
+                    <span className="ml-2 px-1.5 py-0.5 text-xs rounded-md bg-dark-700 text-gray-400 border border-dark-500 inline-flex items-center">
+                      #{todo.taskHash?.substring(0, 8)}
+                    </span>
                   </span>
                 </div>
                 
@@ -360,14 +377,83 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
                 </div>
                 
                 {dueInfo && (
-                  <div className={`px-2 py-0.5 rounded-full flex items-center bg-gray-600/20 ${dueInfo.className}`}>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-xs whitespace-nowrap">{dueInfo.display}</span>
+                  <div className={`px-2 py-1 rounded-md flex items-center bg-gradient-to-r ${dueInfo.isPast ? (todo.completed ? 'from-amber-500/20 to-amber-400/10 border-amber-500/30' : 'from-red-500/20 to-red-400/10 border-red-500/30') : 'from-gray-500/20 to-gray-400/10 border-gray-500/30'} border backdrop-blur-sm`}>
+                    <div className="mr-1.5 flex-shrink-0 bg-opacity-30 rounded-sm p-0.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                    </div>
+                    <span className="text-xs whitespace-nowrap font-medium">{dueInfo.display}</span>
                   </div>
                 )}
+                
+                {todo.verified && todo.txHash && (
+                  <a
+                    href={`https://sepolia.etherscan.io/tx/${todo.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2 py-0.5 rounded-full flex items-center bg-gradient-to-r from-accent-400/30 to-accent-500/30 border border-accent-500/40 text-accent-300 hover:from-accent-400/40 hover:to-accent-500/40 transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                      <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                    </svg>
+                    <span className="text-xs whitespace-nowrap">View Transaction</span>
+                  </a>
+                )}
               </div>
+              
+              {todo.completed && !todo.verified && (
+                <div className="mt-3 pt-2">
+                  <button
+                    onClick={() => setShowVerificationModal(true)}
+                    className="w-full py-2 mt-1 rounded-md bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-sm flex items-center justify-center gap-2 transition-colors duration-200"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Verify Task on Blockchain
+                  </button>
+                </div>
+              )}
+              
+              {todo.tags && todo.tags.length > 0 && (
+                <div className="flex flex-col mt-3 pt-2">
+                  <div className="flex items-center mb-2">
+                    <div className="bg-gradient-to-r from-purple-500/30 to-accent-500/30 p-1.5 rounded-md mr-2 shadow-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-accent-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.04Z"></path>
+                        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.04Z"></path>
+                      </svg>
+                    </div>
+                    <h4 className="text-xs font-semibold text-white">AI Recommendations</h4>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {todo.tags.map((tag, index) => {
+                      const colors = [
+                        "from-blue-500/20 to-cyan-400/10 text-blue-300 border-blue-500/30",
+                        "from-purple-500/20 to-pink-400/10 text-purple-300 border-purple-500/30",
+                        "from-green-500/20 to-emerald-400/10 text-green-300 border-green-500/30",
+                        "from-amber-500/20 to-yellow-400/10 text-amber-300 border-amber-500/30",
+                        "from-red-500/20 to-rose-400/10 text-red-300 border-red-500/30"
+                      ];
+                      const colorClass = colors[index % colors.length];
+                      
+                      return (
+                        <div 
+                          key={index} 
+                          className={`px-2.5 py-1 rounded-md bg-gradient-to-r ${colorClass} border backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:shadow-md`}
+                        >
+                          <span className="text-xs">{tag}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

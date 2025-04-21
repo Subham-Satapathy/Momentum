@@ -16,7 +16,6 @@ export async function connectToDatabase(): Promise<Db> {
     if (!dbConnection) {
       await client.connect();
       dbConnection = client.db("Momentum");
-      console.log("Connected to MongoDB");
     }
     return dbConnection;
   } catch (error) {
@@ -83,9 +82,9 @@ export class DbService<T extends Document> {
     return { ...document, _id: result.insertedId } as T;
   }
 
-  async updateOne(query = {}, update = {}): Promise<{ modifiedCount: number }> {
+  async updateOne(query = {}, update = {}, options = {}): Promise<{ modifiedCount: number }> {
     const collection = await this.getCollection();
-    const result = await collection.updateOne(query, update as UpdateFilter<T>);
+    const result = await collection.updateOne(query, update as UpdateFilter<T>, options);
     return { modifiedCount: result.modifiedCount };
   }
 

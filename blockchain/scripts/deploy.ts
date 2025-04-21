@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  console.log("Deploying TaskManager contract...");
+  // console.log("Deploying TaskManager contract...");
 
   const TaskManager = await ethers.getContractFactory("TaskManager");
   const taskManager = await TaskManager.deploy();
@@ -9,7 +9,7 @@ async function main() {
   await taskManager.waitForDeployment();
   
   const address = await taskManager.getAddress();
-  console.log(`TaskManager deployed to: ${address}`);
+  // console.log(`TaskManager deployed to: ${address}`);
 }
 
 main()

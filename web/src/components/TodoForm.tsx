@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { TaskType, Todo } from '../types/todo';
 import { createTask } from '../services/api';
 import { addTask } from '../services/blockchain';
-import { ethers } from 'ethers';
 
 interface TodoFormProps {
   onAddTodo: (todo: Todo) => void;
@@ -20,7 +19,6 @@ export default function TodoForm({ onAddTodo }: TodoFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
     if (!content.trim()) {
       setError('Task title is required');
@@ -28,9 +26,7 @@ export default function TodoForm({ onAddTodo }: TodoFormProps) {
     }
     
     try {
-
-      const taskString = content + description + new Date().toISOString();
-      const taskHash = ethers.keccak256(ethers.toUtf8Bytes(taskString));
+      setIsSubmitting(true);
 
       const newTask = await createTask({
         content,
@@ -38,17 +34,17 @@ export default function TodoForm({ onAddTodo }: TodoFormProps) {
         priority: 'medium',
         dueDate: dueDate || undefined,
         taskType,
-        taskHash, // Include the taskHash in the new task
       });
 
       try {
-        const result = await addTask(taskHash);
-        console.log('Task added to blockchain:', result);
+        if (!newTask.taskHash) {
+          throw new Error('Task hash is missing');
+        }
+        const result = await addTask(newTask.taskHash);
 
         newTask.txHash = result.txHash;
       } catch (blockchainError) {
         console.error('Error adding task to blockchain (continuing anyway):', blockchainError);
-
       }
 
       setContent('');
@@ -60,7 +56,6 @@ export default function TodoForm({ onAddTodo }: TodoFormProps) {
     } catch (error) {
       console.error('Error adding task:', error);
       setError('Failed to add task. Please try again.');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -202,20 +197,10 @@ export default function TodoForm({ onAddTodo }: TodoFormProps) {
       <div className="flex justify-end">
         <button
           type="submit"
-          className="btn-primary"
+          className="py-2.5 px-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-lg shadow-lg shadow-purple-600/20 hover:shadow-purple-600/40 transition-all duration-200 flex items-center"
           disabled={isSubmitting}
         >
-          {isSubmitting ? (
-            <>
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Creating...
-            </>
-          ) : (
-            'Add Task'
-          )}
+          {isSubmitting ? 'Processing...' : 'Add Task'}
         </button>
       </div>
     </form>

@@ -188,7 +188,7 @@ export default function LandingHero() {
               </svg>
             </div>
             <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-white">Reward System</h3>
-            <p className="text-gray-300 text-sm leading-relaxed">Earn tokens by completing tasks and build your productivity streak <span className="inline sm:block">(coming soon)</span></p>
+            <p className="text-gray-300 text-sm leading-relaxed">Earn $MOM tokens by completing tasks and build your productivity streak</p>
           </motion.div>
         </motion.div>
       </motion.div>

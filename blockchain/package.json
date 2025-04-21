@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:task": "npx hardhat run scripts/deploy.ts",
+    "deploy:task:sepolia": "npx hardhat run scripts/deploy.ts --network sepolia",
+    "deploy:mom": "npx hardhat run scripts/deploy-momtoken.ts",
+    "deploy:mom:sepolia": "npx hardhat run scripts/deploy-momtoken.ts --network sepolia",
+    "deploy:all": "npm run deploy:task && npm run deploy:mom",
+    "deploy:all:sepolia": "npm run deploy:task:sepolia && npm run deploy:mom:sepolia"
   },
   "keywords": [],
   "author": "",

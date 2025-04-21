@@ -29,29 +29,39 @@ export const analyzeTaskWithAI = async (task: {
 
     const formatInstructions = parser.getFormatInstructions();
     const prompt = PromptTemplate.fromTemplate(`
-      You are a productivity assistant that helps analyze tasks and assign priorities.
-      
-      Please analyze the following task and provide a suggested priority level (low, medium, or high),
-      along with some specific, actionable tips and reasoning for your suggestion.
-      
-      Make tips short (5-7 words), specific, and actionable. Focus on time management, focus techniques,
-      or task management strategies that would be helpful for this specific task.
-      
-      Examples of good tips:
-      - "Break into smaller subtasks"
-      - "Schedule focused work blocks"
-      - "Set clear completion criteria"
-      - "Consider delegating if possible"
-      - "Use timeboxing technique"
-      
+      You are a productivity and motivation assistant that helps analyze tasks and assign priorities.
+    
+      Please analyze the following task and provide:
+      - A **suggested priority level**: low, medium, or high
+      - **Three detailed productivity tips** (around 30 words each)
+      - A brief **reasoning** for your suggestion
+      - One **motivational tip or quote** to inspire the user
+    
+      Focus your tips on:
+      - Time management
+      - Focus and energy optimization
+      - Task organization and planning
+      - Momentum and consistency
+    
+      Examples of detailed tips:
+      - "Break the task into three clear subtasks, and allocate separate 30-minute focus blocks on your calendar to work on each without distractions."
+      - "Use the Pomodoro Technique—25 minutes of deep work followed by a 5-minute break—to maintain energy and prevent burnout over longer periods."
+      - "Visualize the completed outcome before starting. This can provide clarity and motivation to take action even when you're feeling overwhelmed or unmotivated."
+    
+      Examples of motivational quotes:
+      - "Small progress is still progress."
+      - "You don’t have to be great to start, but you have to start to be great."
+      - "Discipline turns dreams into reality."
+    
       Task: {content}
       Description: {description}
       Due Date: {dueDate}
       Current Priority: {priority}
-      
+    
       Respond with JSON that matches this format:
       {format_instructions}
     `);
+    
 
     const chain = RunnableSequence.from([
       prompt,
@@ -76,18 +86,3 @@ export const analyzeTaskWithAI = async (task: {
     console.error("Error in AI task analysis:", error);
   }
 };
-
-export async function analyzePriority(
-  taskContent: string,
-  taskDescription: string
-): Promise<{ priority: Priority; reasoning: string }> {
-  const result = await analyzeTaskWithAI({
-    content: taskContent,
-    description: taskDescription
-  });
-  
-  return { 
-    priority: result?.suggestedPriority || 'medium',
-    reasoning: result?.reasoning || ''
-  };
-}

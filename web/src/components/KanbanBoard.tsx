@@ -102,7 +102,6 @@ export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerif
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {}
         {(statusFilter === 'all' || statusFilter === 'to-do') && (
           <div 
             className="bg-dark-800 rounded-lg p-4 border border-dark-600"
@@ -142,7 +141,6 @@ export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerif
           </div>
         )}
         
-        {}
         {(statusFilter === 'all' || statusFilter === 'in-progress') && (
           <div 
             className="bg-dark-800 rounded-lg p-4 border border-dark-600"
@@ -182,7 +180,6 @@ export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerif
           </div>
         )}
         
-        {}
         {(statusFilter === 'all' || statusFilter === 'completed') && (
           <div 
             className="bg-dark-800 rounded-lg p-4 border border-dark-600"
