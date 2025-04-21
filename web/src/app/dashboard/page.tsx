@@ -284,7 +284,7 @@ export default function Dashboard() {
             </div>
             
             <p className="text-white/70 text-sm">
-              We're working on mobile support. <br />
+              We&apos;re working on mobile support. <br />
               Check back soon!
             </p>
           </div>

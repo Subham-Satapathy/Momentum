@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { TaskType, Todo } from '../types/todo';
 import { createTask } from '../services/api';
-import { analyzePriority } from '../services/ai';
 import { addTask } from '../services/blockchain';
 import { ethers } from 'ethers';
 
