@@ -19,8 +19,7 @@ export default function Navbar() {
   };
   
   const isLandingPage = pathname === '/';
-  
-  // Handle scroll effect
+
   useEffect(() => {
     const handleScroll = () => {
       const isScrolled = window.scrollY > 10;
@@ -32,16 +31,13 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [scrolled]);
-  
-  // Don't show navbar on landing page
+
   if (isLandingPage) {
     return null;
   }
 
-  // Handle adding a new task
   const handleAddTodo = () => {
-    // We need to implement a global state management or context to handle this
-    // For now, we'll just close the modal
+
     setIsTaskModalOpen(false);
     window.location.reload(); // Temporary solution to refresh the page to show new task
   };

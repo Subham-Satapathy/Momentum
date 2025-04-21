@@ -1,10 +1,8 @@
 import { Todo, TaskType, Priority, TaskStatus } from '../types/todo';
 import { getToken } from './auth';
 
-// API Base URL
 const API_BASE_URL = '/api';
 
-// Helper function to create headers with authentication
 const getAuthHeaders = () => {
   const token = getToken();
   return {
@@ -13,7 +11,6 @@ const getAuthHeaders = () => {
   };
 };
 
-// Login user and get token
 export const loginUser = async (walletAddress: string): Promise<string> => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -37,13 +34,13 @@ export const loginUser = async (walletAddress: string): Promise<string> => {
   }
 };
 
-// Create a new task
 export const createTask = async (taskData: {
   content: string;
   description?: string;
   priority: Priority;
   dueDate?: string;
   taskType: TaskType;
+  taskHash?: string;
 }): Promise<Todo> => {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks`, {
@@ -65,7 +62,6 @@ export const createTask = async (taskData: {
   }
 };
 
-// Get all tasks
 export const getTasks = async (): Promise<Todo[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks`, {
@@ -86,10 +82,9 @@ export const getTasks = async (): Promise<Todo[]> => {
   }
 };
 
-// Update a task
 export const updateTask = async (taskId: string, updates: Partial<Todo>): Promise<Todo> => {
   try {
-    // Make sure we're not sending null or undefined values that could cause issues
+
     const cleanedUpdates = { ...updates };
     Object.keys(cleanedUpdates).forEach((key: string) => {
       const k = key as keyof Partial<Todo>;
@@ -120,7 +115,6 @@ export const updateTask = async (taskId: string, updates: Partial<Todo>): Promis
   }
 };
 
-// Delete a task
 export const deleteTask = async (taskId: string): Promise<void> => {
   try {
     const response = await fetch(`${API_BASE_URL}/tasks?id=${taskId}`, {
@@ -138,7 +132,6 @@ export const deleteTask = async (taskId: string): Promise<void> => {
   }
 };
 
-// Update task status
 export const updateTaskStatus = async (taskId: string, status: TaskStatus): Promise<Todo> => {
   const updates = { 
     status,
@@ -146,37 +139,4 @@ export const updateTaskStatus = async (taskId: string, status: TaskStatus): Prom
     completedAt: status === 'completed' ? new Date().toISOString() : undefined
   };
   return updateTask(taskId, updates);
-};
-
-// Verify task completion on blockchain
-export const verifyTaskCompletion = async (
-  taskId: string,
-  taskHash: string,
-  transactionHash: string
-): Promise<Todo> => {
-  try {
-    // Import blockchain utilities dynamically
-    const { verifyTaskOnBlockchain } = await import('./blockchain');
-    const { BrowserProvider } = (await import('ethers')).ethers;
-    
-    if (typeof window === 'undefined' || !window.ethereum) {
-      throw new Error('Ethereum provider not available');
-    }
-
-    // Get provider and signer
-    const provider = new BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-
-    // Call blockchain verify function
-    await verifyTaskOnBlockchain(taskHash, signer);
-
-    // Update task in database
-    return updateTask(taskId, { 
-      verified: true,
-      txHash: transactionHash
-    });
-  } catch (error) {
-    console.error('Error verifying task completion:', error);
-    throw error;
-  }
 };

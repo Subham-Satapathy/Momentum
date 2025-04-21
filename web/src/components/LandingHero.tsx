@@ -46,7 +46,6 @@ export default function LandingHero() {
   const router = useRouter();
   const { isConnected } = useWallet();
 
-  // Redirect to dashboard if connected
   useEffect(() => {
     if (isConnected) {
       const redirectTimer = setTimeout(() => {
@@ -59,7 +58,7 @@ export default function LandingHero() {
 
   return (
     <div className="min-h-screen py-12 px-6 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 overflow-hidden relative">
-      {/* Background decoration elements */}
+      {}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
         <div className="absolute top-20 left-10 w-64 h-64 bg-pink-500 rounded-full filter blur-[120px] opacity-20"></div>
         <div className="absolute bottom-40 right-10 w-72 h-72 bg-blue-500 rounded-full filter blur-[120px] opacity-20"></div>
@@ -115,7 +114,7 @@ export default function LandingHero() {
             transition={{ type: "spring", stiffness: 500, damping: 15 }}
           >
             <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-200 mb-1">Smart</div>
-            <div className="text-sm text-gray-300">Contracts</div>
+            <div className="text-sm text-gray-300">Assistance</div>
           </motion.div>
         </motion.div>
 
@@ -189,7 +188,7 @@ export default function LandingHero() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold mb-3 text-white">Reward System</h3>
-            <p className="text-gray-300 text-sm leading-relaxed">Earn tokens by completing tasks and build your productivity streak</p>
+            <p className="text-gray-300 text-sm leading-relaxed">Earn tokens by completing tasks and build your productivity streak <br />(coming soon)</p>
           </motion.div>
         </motion.div>
       </motion.div>

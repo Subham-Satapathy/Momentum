@@ -16,7 +16,7 @@ export default function WalletConnect() {
         <motion.button
           onClick={connect}
           disabled={isConnecting}
-          className="btn-primary py-3 px-6 min-w-[200px] shadow-lg hover:shadow-accent-500/20"
+          className="btn-primary py-3 px-6 min-w-[200px] shadow-lg hover:shadow-accent-500/20 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >

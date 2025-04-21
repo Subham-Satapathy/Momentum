@@ -1,10 +1,8 @@
 import { MongoClient, Db, Collection, Document, UpdateFilter, WithId, Filter, OptionalUnlessRequiredId } from 'mongodb';
 import 'dotenv/config';
 
-// Get MongoDB URI from environment variables
 const uri = process.env.MONGODB_URI;
 
-// Check if MongoDB URI is set
 if (!uri) {
   console.error("MONGODB_URI environment variable is not set");
   process.exit(1);
@@ -13,9 +11,6 @@ if (!uri) {
 const client = new MongoClient(uri);
 let dbConnection: Db | null = null;
 
-/**
- * Connects to the MongoDB database
- */
 export async function connectToDatabase(): Promise<Db> {
   try {
     if (!dbConnection) {
@@ -30,9 +25,6 @@ export async function connectToDatabase(): Promise<Db> {
   }
 }
 
-/**
- * Generic Database Service
- */
 export class DbService<T extends Document> {
   private collectionName: string;
 
@@ -40,17 +32,11 @@ export class DbService<T extends Document> {
     this.collectionName = collectionName;
   }
 
-  /**
-   * Get collection
-   */
   private async getCollection(): Promise<Collection<T>> {
     const db = await connectToDatabase();
     return db.collection<T>(this.collectionName);
   }
 
-  /**
-   * Find documents
-   */
   async find(query = {}): Promise<WithId<T>[]> {
     const collection = await this.getCollection();
     const docs = await collection.find(query).toArray();
@@ -61,9 +47,6 @@ export class DbService<T extends Document> {
     }));
   }
 
-  /**
-   * Find a single document
-   */
   async findOne(query: Filter<T> = {}): Promise<(WithId<T> & { 
     save: () => Promise<WithId<T>>, 
     toObject: () => WithId<T> 
@@ -94,27 +77,18 @@ export class DbService<T extends Document> {
     return null;
   }
 
-  /**
-   * Create a document
-   */
   async create(document: T): Promise<T> {
     const collection = await this.getCollection();
     const result = await collection.insertOne(document as OptionalUnlessRequiredId<T>);
     return { ...document, _id: result.insertedId } as T;
   }
 
-  /**
-   * Update a document
-   */
   async updateOne(query = {}, update = {}): Promise<{ modifiedCount: number }> {
     const collection = await this.getCollection();
     const result = await collection.updateOne(query, update as UpdateFilter<T>);
     return { modifiedCount: result.modifiedCount };
   }
 
-  /**
-   * Delete a document
-   */
   async deleteOne(query = {}): Promise<{ deletedCount: number }> {
     const collection = await this.getCollection();
     const result = await collection.deleteOne(query);
@@ -122,5 +96,4 @@ export class DbService<T extends Document> {
   }
 }
 
-// Export the client for closing connection when needed
 export { client }; 

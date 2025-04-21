@@ -9,8 +9,6 @@ import { Todo, TaskStatus } from '../../types/todo';
 import { useWallet } from '../../contexts/WalletContext';
 import { getTasks, loginUser, deleteTask, updateTask } from '../../services/api';
 import { setToken } from '../../services/auth';
-import { getTaskCount } from '../../services/blockchain';
-import { ethers } from 'ethers';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
@@ -21,42 +19,51 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [verifiedTaskCount, setVerifiedTaskCount] = useState(0);
-  // View toggle state
+  const [isDesktop, setIsDesktop] = useState(true);
+
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
-  // Modal state
+
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
   const fetchVerifiedTaskCount = useCallback(async () => {
-    if (!address) return;
-    
     try {
-      if (typeof window !== 'undefined' && window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const count = await getTaskCount(address, provider);
-        setVerifiedTaskCount(count);
-      }
+      const tasks = await getTasks();
+      const verifiedTasksCount = tasks.filter(task => task.verified && task.userAddress === address);
+      setVerifiedTaskCount(verifiedTasksCount.length);
     } catch (error) {
       console.error('Error fetching verified task count:', error);
     }
   }, [address]);
 
   useEffect(() => {
-    // Check if user is connected to wallet
-    setIsLoading(true);
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
     
-    // If user is connected, get a real JWT token from the backend
+    // Initial check
+    checkScreenSize();
+    
+    // Set up listener for resize events
+    window.addEventListener('resize', checkScreenSize);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  useEffect(() => {
+
+    setIsLoading(true);
+
     if (isConnected && address) {
-      // Get JWT token from backend and store it
+
       loginUser(address)
         .then(token => {
-          // Store the JWT token in localStorage
+
           setToken(token);
-          
-          // Fetch tasks from API
+
           return fetchTasks();
         })
         .then(() => {
-          // Get verified task count from blockchain
           return fetchVerifiedTaskCount();
         })
         .catch(error => {
@@ -70,7 +77,7 @@ export default function Dashboard() {
   }, [isConnected, address, fetchVerifiedTaskCount]);
 
   useEffect(() => {
-    // Redirect to home if not connected
+
     if (!isLoading && !isConnected) {
       router.push('/');
     }
@@ -95,11 +102,10 @@ export default function Dashboard() {
 
   const toggleTodo = async (id: string) => {
     try {
-      // Find the current todo to toggle
+
       const todo = todos.find(todo => todo.id === id);
       if (!todo) return;
-      
-      // Update UI state optimistically
+
       setTodos(
         todos.map((todo) =>
           todo.id === id ? { 
@@ -111,20 +117,18 @@ export default function Dashboard() {
           } : todo
         )
       );
-      
-      // Now update in the database
+
       await updateTask(id, { 
         completed: !todo.completed,
         completedAt: !todo.completed ? new Date().toISOString() : undefined,
         status: !todo.completed ? 'completed' : 'in-progress'
       });
-      
-      // Success toast
+
       toast.success(todo.completed ? 'Task marked as active' : 'Task completed!');
     } catch (error) {
       console.error('Error toggling task completion:', error);
       toast.error('Failed to update task status. Please try again.');
-      // Revert the UI state if the API call failed
+
       fetchTasks();
     }
   };
@@ -158,34 +162,31 @@ export default function Dashboard() {
       const todo = todos.find(todo => todo.id === id);
       if (!todo) return;
 
-      // Update UI state optimistically
       setTodos(
         todos.map((todo) =>
           todo.id === id ? {
             ...todo,
             status,
-            // Also update completed status if necessary
+
             completed: status === 'completed' ? true : false,
             completedAt: status === 'completed' ? new Date().toISOString() : undefined
           } : todo
         )
       );
-      
-      // Now update in the database - make sure this completes
+
       const updatedTask = await updateTask(id, { 
         status,
         completed: status === 'completed' ? true : false,
         completedAt: status === 'completed' ? new Date().toISOString() : undefined
       });
-      
-      // Success toast
+
       toast.success(`Task moved to ${status}`);
       
       return updatedTask;
     } catch (error) {
       console.error('Error updating task status:', error);
       toast.error('Failed to update task status. Please try again.');
-      // Revert the UI state if the API call failed
+
       fetchTasks();
     }
   };
@@ -225,9 +226,76 @@ export default function Dashboard() {
     );
   }
 
+  if (!isDesktop) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 text-center shadow-2xl overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-purple-600 rounded-full filter blur-[80px] opacity-30"></div>
+          <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-pink-600 rounded-full filter blur-[80px] opacity-30"></div>
+          
+          <div className="relative">
+            <div className="w-24 h-24 mx-auto mb-6 relative">
+              <svg viewBox="0 0 200 200" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <path 
+                  fill="rgba(255, 255, 255, 0.1)" 
+                  d="M45.7,-51.9C59.5,-41,71.3,-26.2,74.8,-9.4C78.3,7.5,73.5,26.3,62.4,40.2C51.2,54.2,33.7,63.2,14.8,68.5C-4.1,73.7,-24.4,75.2,-39.3,66.5C-54.2,57.8,-63.5,39,-69.9,18.5C-76.3,-2,-79.7,-24.2,-71.3,-39.7C-62.9,-55.2,-42.7,-64,-24.2,-68C-5.7,-72,18,-71.1,34.7,-63.3C51.5,-55.5,61.3,-40.7,45.7,-51.9Z" 
+                  transform="translate(100 100)" 
+                  className="animate-[blob_8s_ease-in-out_infinite]"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-bold text-white mb-3">Desktop Experience Only</h2>
+            <p className="text-gray-300 mb-8">
+              Momentum currently provides the best experience on larger screens. Please switch to a desktop device to access all features.
+            </p>
+            
+            <motion.div 
+              className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-8"
+              initial={{ width: 0 }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 1.5, delay: 0.5 }}
+            >
+              <div className="h-full w-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 rounded-full animate-pulse"></div>
+            </motion.div>
+            
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              {[1, 2, 3].map((i) => (
+                <motion.div 
+                  key={i}
+                  className="aspect-square rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center"
+                  initial={{ y: 50, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2 * i }}
+                >
+                  <div className="w-10 h-10 bg-white/10 rounded-xl"></div>
+                </motion.div>
+              ))}
+            </div>
+            
+            <p className="text-white/70 text-sm">
+              We're working on mobile support. <br />
+              Check back soon!
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-10 px-6 bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 overflow-hidden relative">
-      {/* Background decoration elements */}
+      {}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
         <div className="absolute top-20 left-10 w-64 h-64 bg-pink-500 rounded-full filter blur-[120px] opacity-20"></div>
         <div className="absolute bottom-40 right-10 w-72 h-72 bg-blue-500 rounded-full filter blur-[120px] opacity-20"></div>
@@ -236,7 +304,7 @@ export default function Dashboard() {
 
       <div className="max-w-7xl mx-auto">
 
-        {/* Stats Cards */}
+        {}
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
           initial={{ opacity: 0, y: 20 }}
@@ -290,7 +358,7 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* View Toggle */}
+        {}
         <motion.div 
           className="mb-8 flex justify-center"
           initial={{ opacity: 0, y: 20 }}
@@ -321,7 +389,7 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {/* Main Content */}
+        {}
         <motion.div 
           className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 shadow-xl mb-8"
           initial={{ opacity: 0, y: 20 }}

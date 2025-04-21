@@ -1,13 +1,11 @@
 import { DbService } from './dbService';
 import { Todo, TaskStatus } from '../types/todo';
 
-// Create a task service using the generic DB service
 class TaskService extends DbService<Todo> {
   constructor() {
     super('tasks');
   }
 
-  // Task-specific methods
   async findByUserId(userAddress: string) {
     return this.find({ userAddress });
   }
@@ -55,5 +53,4 @@ class TaskService extends DbService<Todo> {
   }
 }
 
-// Export a singleton instance
 export const Task = new TaskService(); 

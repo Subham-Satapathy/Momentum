@@ -16,23 +16,18 @@ interface KanbanBoardProps {
 }
 
 export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerified, onStatusUpdate }: KanbanBoardProps) {
-  // Status filter state
+
   const [statusFilter, setStatusFilter] = useState<'all' | 'to-do' | 'in-progress' | 'completed'>('all');
-  
-  // Get todo tasks (not started)
+
   const todoTasks = todos.filter(todo => !todo.completed && !todo.status.includes('in-progress'));
-  
-  // Get in-progress tasks
+
   const inProgressTasks = todos.filter(todo => !todo.completed && todo.status.includes('in-progress'));
-  
-  // Get completed tasks (including verified)
+
   const completedTasks = todos.filter(todo => todo.completed);
-  
-  // Function to handle drag start
+
   const handleDragStart = (e: React.DragEvent, id: string) => {
     const task = todos.find(t => t.id === id);
-    
-    // Prevent dragging if task is verified
+
     if (task?.verified) {
       e.preventDefault();
       toast.error("Verified tasks cannot be moved");
@@ -41,30 +36,27 @@ export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerif
     
     e.dataTransfer.setData('taskId', id);
   };
-  
-  // Function to handle drop
+
   const handleDrop = async (e: React.DragEvent, targetStatus: TaskStatus) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
     const task = todos.find(t => t.id === taskId);
     
     if (!task || task.status === targetStatus) return;
-    
-    // Prevent status change if task is verified
+
     if (task.verified) {
       toast.error("Verified tasks cannot be modified");
       return;
     }
     
     try {
-      // Try the direct status update first
+
       const updatedTask = await updateTask(taskId, { status: targetStatus });
       
       if (updatedTask) {
-        // Update UI with the result from the API
+
         onStatusUpdate(taskId, targetStatus);
-        
-        // If status changed to/from completed, toggle the completion state
+
         if ((targetStatus === 'completed' && !task.completed) || 
             (targetStatus !== 'completed' && task.completed)) {
           onToggle(taskId);
@@ -75,8 +67,7 @@ export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerif
       toast.error('Failed to update task status. Please try again.');
     }
   };
-  
-  // Function to handle drag over
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
@@ -111,7 +102,7 @@ export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerif
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* To-Do Column */}
+        {}
         {(statusFilter === 'all' || statusFilter === 'to-do') && (
           <div 
             className="bg-dark-800 rounded-lg p-4 border border-dark-600"
@@ -151,7 +142,7 @@ export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerif
           </div>
         )}
         
-        {/* In Progress Column */}
+        {}
         {(statusFilter === 'all' || statusFilter === 'in-progress') && (
           <div 
             className="bg-dark-800 rounded-lg p-4 border border-dark-600"
@@ -191,7 +182,7 @@ export default function KanbanBoard({ todos, onToggle, onDelete, onEdit, onVerif
           </div>
         )}
         
-        {/* Completed Column */}
+        {}
         {(statusFilter === 'all' || statusFilter === 'completed') && (
           <div 
             className="bg-dark-800 rounded-lg p-4 border border-dark-600"

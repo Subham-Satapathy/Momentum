@@ -15,7 +15,7 @@ export default function TaskModal({ isOpen, onClose, onAddTodo }: TaskModalProps
   
   useEffect(() => {
     if (isOpen) {
-      // Trigger animation after modal is rendered
+
       const timer = setTimeout(() => setAnimateIn(true), 10);
       return () => clearTimeout(timer);
     } else {
@@ -43,14 +43,14 @@ export default function TaskModal({ isOpen, onClose, onAddTodo }: TaskModalProps
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Decorative Elements */}
+        {}
         <div className="absolute -left-16 -top-16 w-32 h-32 bg-purple-600/30 rounded-full blur-xl"></div>
         <div className="absolute -right-12 -bottom-12 w-28 h-28 bg-blue-500/20 rounded-full blur-xl"></div>
         <div className="absolute right-20 top-0 w-16 h-16 bg-pink-500/20 rounded-full blur-lg"></div>
         
-        {/* Card */}
+        {}
         <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
-          {/* Top gradient bar */}
+          {}
           <div className="h-1.5 w-full bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500"></div>
           
           <div className="p-7">

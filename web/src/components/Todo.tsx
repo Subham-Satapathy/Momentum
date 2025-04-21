@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Todo as TodoType, Priority, TaskType, TaskStatus } from '../types/todo';
 import VerificationModal from './VerificationModal';
 
@@ -18,6 +19,11 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
   const [editDescription, setEditDescription] = useState(todo.description || '');
   const [editDueDate, setEditDueDate] = useState(todo.dueDate || '');
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [isBrowser, setIsBrowser] = useState(false);
+
+  useEffect(() => {
+    setIsBrowser(true);
+  }, []);
 
   const handleEditStart = () => {
     setIsEditing(true);
@@ -51,13 +57,12 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
   };
 
   const handleCompleteClick = () => {
-    // If the task is not completed, just toggle it
+
     if (!todo.completed) {
       onToggle(todo.id);
       return;
     }
-    
-    // If the task is already completed and not verified, show the verification modal
+
     if (todo.completed && !todo.verified) {
       setShowVerificationModal(true);
     }
@@ -67,18 +72,24 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
     const date = new Date(dateString);
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
-    
-    // Check if date is in the past
+
     const isPast = date < now;
     
     const formattedDate = date.toLocaleDateString();
     const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
     let displayClass = "text-gray-400";
-    if (isPast) displayClass = "text-red-400";
+    let displayText = `${isToday ? 'Today' : formattedDate} at ${formattedTime}`;
+
+    if (isPast) {
+      displayClass = todo.completed ? "text-amber-400" : "text-red-400";
+      displayText = todo.completed 
+        ? `Was due: ${displayText}`
+        : `Overdue: ${displayText}`;
+    }
     
     return {
-      display: `${isToday ? 'Today' : formattedDate} at ${formattedTime}`,
+      display: displayText,
       className: displayClass,
       isPast
     };
@@ -151,8 +162,26 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
   const taskTypeStyle = getTaskTypeColor(todo.taskType || 'personal');
   const dueInfo = todo.dueDate ? formatDueDate(todo.dueDate) : null;
 
-  // Add a status badge based on the task's status
   const getStatusBadge = (status: TaskStatus) => {
+
+    if (todo.dueDate && !todo.completed) {
+      const dueDate = new Date(todo.dueDate);
+      const now = new Date();
+      if (dueDate < now) {
+        return {
+          bg: 'bg-red-500/10',
+          text: 'text-red-400',
+          border: 'border-red-500/20',
+          icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-8.414l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414L9 9.586V6a1 1 0 112 0v3.586z" clipRule="evenodd" />
+            </svg>
+          ),
+          label: 'Overdue'
+        };
+      }
+    }
+
     switch (status) {
       case 'to-do':
         return {
@@ -317,7 +346,7 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
               )}
               
               <div className="flex flex-wrap items-center gap-2 mt-3 text-xs">
-                {/* Status badge */}
+                {}
                 <span 
                   className={`px-2 py-0.5 rounded-full ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border} flex items-center font-medium`}
                 >
@@ -325,12 +354,19 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
                   {statusStyle.label}
                 </span>
                 
-                {/* Priority badge */}
+                {}
                 <span 
-                  className={`px-2 py-0.5 rounded-full ${priorityStyle.bg} ${priorityStyle.text} ${priorityStyle.border} flex items-center font-medium`}
+                  className={`px-2 py-0.5 rounded-full ${priorityStyle.bg} ${priorityStyle.text} ${priorityStyle.border} flex items-center font-medium group relative`}
                 >
                   <span className={`w-1.5 h-1.5 rounded-full ${priorityStyle.dot} mr-1`}></span>
                   {todo.priority}
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                  </svg>
+                  
+                  <div className="hidden group-hover:block absolute left-0 top-5 z-10 bg-dark-900 border border-indigo-500/30 rounded-md shadow-lg p-2 text-xs text-gray-300 whitespace-nowrap">
+                    <p>Priority suggested by AI</p>
+                  </div>
                 </span>
                 
                 {todo.taskType && (
@@ -353,16 +389,32 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
                   </span>
                 )}
                 
-                {todo.tags && todo.tags.length > 0 && todo.tags
-                  .filter(tag => tag !== todo.taskType)
-                  .map((tag, index) => (
-                  <span 
-                    key={index} 
-                    className="px-2 py-0.5 rounded-full bg-accent-500/10 text-accent-400 border border-accent-500/20 font-medium"
-                  >
-                    {tag}
-                  </span>
-                ))}
+                {}
+                {todo.tags && todo.tags.length > 0 && (
+                  <div className="flex flex-col w-full mt-2 mb-1">
+                    <div className="flex items-center space-x-1.5 mb-1 group relative">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-indigo-400 font-medium">AI Tips</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {todo.tags
+                        .filter(tag => tag !== todo.taskType)
+                        .map((tag, index) => (
+                        <div 
+                          key={index}
+                          className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium flex items-center"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1.5 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                          </svg>
+                          {tag}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 <span className="text-gray-300">
                   Created: {new Date(todo.createdAt).toLocaleDateString()}
@@ -410,13 +462,17 @@ export default function Todo({ todo, onToggle, onDelete, onEdit, onVerified }: T
           </div>
         </div>
       )}
-      
-      {showVerificationModal && (
-        <VerificationModal 
-          task={todo} 
-          onClose={() => setShowVerificationModal(false)}
-          onVerified={onVerified}
-        />
+      {showVerificationModal && isBrowser && createPortal(
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+          <div className="relative max-w-md w-full">
+            <VerificationModal 
+              task={todo} 
+              onClose={() => setShowVerificationModal(false)}
+              onVerified={onVerified}
+            />
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

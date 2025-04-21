@@ -12,13 +12,11 @@ interface TodoListProps {
 }
 
 export default function TodoList({ todos, onToggle, onDelete, onEdit, onVerified }: TodoListProps) {
-  // Get in-progress tasks
+
   const inProgressTasks = todos.filter(todo => !todo.completed);
-  
-  // Get completed but not verified tasks
+
   const completedTasks = todos.filter(todo => todo.completed && !todo.verified);
-  
-  // Get verified tasks
+
   const verifiedTasks = todos.filter(todo => todo.verified);
   
   return (

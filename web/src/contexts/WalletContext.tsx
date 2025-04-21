@@ -20,11 +20,10 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        // Check if ethereum is available
+
         if (typeof window !== 'undefined' && window.ethereum) {
           const provider = new ethers.BrowserProvider(window.ethereum);
-          
-          // Get accounts
+
           const accounts = await provider.listAccounts();
           
           if (accounts.length > 0) {
@@ -48,7 +47,6 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
     checkConnection();
 
-    // Listen for account changes
     if (typeof window !== 'undefined' && window.ethereum) {
       window.ethereum.on('accountsChanged', (...args) => {
         const accounts = args[0] as string[];
@@ -96,8 +94,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
-      
-      // Request accounts
+
       await window.ethereum.request({ method: 'eth_requestAccounts' });
       const accounts = await provider.listAccounts();
       
@@ -123,8 +120,7 @@ export const WalletProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const disconnect = () => {
-    // MetaMask doesn't support programmatic disconnection
-    // We can only clear our app state
+
     setState(initialState);
   };
 
@@ -149,7 +145,6 @@ export const useWallet = (): WalletContextType => {
   return context;
 };
 
-// Add TypeScript declaration to make window.ethereum available
 declare global {
   interface Window {
     ethereum?: {

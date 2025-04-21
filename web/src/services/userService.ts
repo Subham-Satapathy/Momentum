@@ -1,6 +1,5 @@
 import { DbService } from './dbService';
 
-// User interface
 export interface IUser {
   address: string;
   username?: string;
@@ -13,7 +12,6 @@ export interface IUser {
   };
 }
 
-// Create a user service using the generic DB service
 class UserService {
   private dbService: DbService<IUser>;
   
@@ -21,7 +19,6 @@ class UserService {
     this.dbService = new DbService<IUser>('users');
   }
 
-  // User-specific methods
   async findByAddress(address: string) {
     return this.dbService.findOne({ address });
   }
@@ -39,8 +36,7 @@ class UserService {
       { $set: { preferences } }
     );
   }
-  
-  // Add standard database operations
+
   async find(query = {}) {
     return this.dbService.find(query);
   }
@@ -62,5 +58,4 @@ class UserService {
   }
 }
 
-// Export a singleton instance
 export const User = new UserService(); 
