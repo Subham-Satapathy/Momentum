@@ -15,7 +15,6 @@ export default function TaskModal({ isOpen, onClose, onAddTodo }: TaskModalProps
   
   useEffect(() => {
     if (isOpen) {
-
       const timer = setTimeout(() => setAnimateIn(true), 10);
       return () => clearTimeout(timer);
     } else {
@@ -32,7 +31,7 @@ export default function TaskModal({ isOpen, onClose, onAddTodo }: TaskModalProps
 
   return (
     <div 
-      className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-300 ease-in-out ${
+      className={`fixed inset-0 flex items-center justify-center z-50 p-3 sm:p-4 transition-all duration-300 ease-in-out ${
         animateIn ? 'backdrop-blur-md bg-black/70' : 'backdrop-blur-none bg-black/0'
       }`}
       onClick={onClose}
@@ -43,22 +42,19 @@ export default function TaskModal({ isOpen, onClose, onAddTodo }: TaskModalProps
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {}
         <div className="absolute -left-16 -top-16 w-32 h-32 bg-purple-600/30 rounded-full blur-xl"></div>
         <div className="absolute -right-12 -bottom-12 w-28 h-28 bg-blue-500/20 rounded-full blur-xl"></div>
         <div className="absolute right-20 top-0 w-16 h-16 bg-pink-500/20 rounded-full blur-lg"></div>
         
-        {}
         <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
-          {}
           <div className="h-1.5 w-full bg-gradient-to-r from-purple-500 via-blue-500 to-pink-500"></div>
           
-          <div className="p-7">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <div className="p-4 sm:p-7">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">New Task</span>
                 <span className="bg-gradient-to-r from-purple-500 to-pink-500 p-1 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 sm:h-4 w-3 sm:w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
                   </svg>
                 </span>
